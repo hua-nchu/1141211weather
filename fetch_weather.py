@@ -1,27 +1,48 @@
 """
-中央氣象局天氣資料獲取模組
-功能：從 CWA API 下載並解析 JSON 資料
-"""
-
 中央氣象局 API 資料獲取模組
 功能：從 CWA OpenData API 下載並解析天氣資料
 """
+
+import sys
+import io
+
+# 設置 Windows 終端輸出為 UTF-8
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 import requests
 import json
 from datetime import datetime
 from typing import Dict, List, Optional
 import os
-from dotenv import load_dotenv
 
-# 載入環境變數
-load_dotenv()
+# API 金鑰載入（支援多種環境）
+API_KEY = None
 
-# API 設置（從環境變數讀取，如無則使用預設教學金鑰）
-API_KEY = os.getenv('CWA_API_KEY', 'CWA-1FFDDAEC-161F-46A3-BE71-93C32C52829F')
-API_BASE_URL = "https://opendata.cwa.gov.tw/fileapi/v1/opendataapi"
-DATASET_ID = "F-A0010-001"
-API_URL = f"{API_BASE_URL}/{DATASET_ID}"
+# 優先 1: 嘗試使用 Streamlit Secrets（雲端部署）
+try:
+    import streamlit as st
+    if hasattr(st, 'secrets') and 'CWA_API_KEY' in st.secrets:
+        API_KEY = st.secrets['CWA_API_KEY']
+except:
+    pass
+
+# 優先 2: 使用環境變數（本地開發）
+if not API_KEY:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        API_KEY = os.getenv('CWA_API_KEY')
+    except:
+        pass
+
+# 優先 3: 使用預設值（向後兼容）
+if not API_KEY:
+    API_KEY = 'CWA-1FFDDAEC-161F-46A3-BE71-93C32C52829F'
+
+# API 配置
+API_URL = "https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/F-A0010-001"
 
 
 def fetch_weather_data() -> Optional[Dict]:

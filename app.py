@@ -11,7 +11,8 @@ from database import (
     get_latest_weather,
     get_weather_by_batch,
     get_batch_list,
-    get_database_stats
+    get_database_stats,
+    insert_weather_data
 )
 
 # ==================== 色彩主題系統 ====================
@@ -661,6 +662,42 @@ def render_enhanced_data_table(weather_data):
     return df_display
 
 
+def auto_initialize_database():
+    """自動抓取一批資料並初始化資料庫（用於 Streamlit Cloud）"""
+    try:
+        from fetch_weather import fetch_weather_data, parse_weather_json
+        from datetime import datetime
+        
+        with st.spinner('🔄 正在初始化資料庫...'):
+            json_data = fetch_weather_data()
+            if json_data:
+                weather_list = parse_weather_json(json_data)
+                if weather_list:
+                    batch_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    insert_weather_data(weather_list, batch_id)
+                    st.success(f'✅ 成功初始化資料庫！載入了 {len(weather_list)} 筆資料')
+                    return True
+        st.error('❌ 初始化失敗：無法解析資料')
+        return False
+    except Exception as e:
+        st.error(f'❌ 初始化失敗：{e}')
+        import traceback
+        st.code(traceback.format_exc())
+        return False
+
+
+def ensure_database_initialized():
+    """確保資料庫已初始化（用於 Streamlit Cloud）"""
+    try:
+        stats = get_database_stats()
+        if stats and stats['total_records'] == 0:
+            st.info('⚠️ 資料庫為空，正在自動初始化...')
+            if auto_initialize_database():
+                st.rerun()  # 重新載入以顯示新資料
+    except Exception as e:
+        st.warning(f'資料庫檢查失敗：{e}')
+
+
 def main():
     # 設置頁面配置
     st.set_page_config(
@@ -669,6 +706,9 @@ def main():
         layout="wide",
         initial_sidebar_state="collapsed"
     )
+    
+    # 確保資料庫已初始化（用於 Streamlit Cloud）
+    ensure_database_initialized()
     
     # 注入自訂 CSS
     inject_custom_css()

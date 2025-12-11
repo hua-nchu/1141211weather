@@ -66,6 +66,37 @@ streamlit run app.py
 
 瀏覽器將自動開啟，顯示天氣資料視覺化介面。
 
+## 🌐 Streamlit Cloud 部署
+
+本應用已部署到 Streamlit Cloud：**https://1141211weather-ptlrev47fzdgquusncukf6.streamlit.app/**
+
+### 部署步驟
+
+1. **Fork 或 Clone 此倉庫到您的 GitHub**
+
+2. **在 Streamlit Cloud 創建應用**:
+   - 訪問 https://share.streamlit.io/
+   - 連接您的 GitHub 倉庫
+   - 選擇此專案
+
+3. **配置 Secrets**:
+   - 在 App Settings > Secrets 中添加：
+   ```toml
+   CWA_API_KEY = "your_api_key_here"
+   ```
+   參考 `.streamlit/secrets.toml.example` 範本
+
+4. **首次啟動**:
+   - 應用會自動初始化資料庫
+   - 第一次載入可能需要幾秒鐘
+   - 之後訪問將使用已存在的資料
+
+### 注意事項
+
+- ⚠️ 首次訪問時，應用會自動從 CWA API 抓取一批資料
+- 📊 Streamlit Cloud 的免費版本有資源限制
+- 🔄 資料庫會在每次部署時重置（因為不在 Git 中）
+
 ## 📊 功能特色
 
 ### API 資料獲取 (`fetch_weather.py`)
