@@ -24,7 +24,7 @@ ENV/
 Thumbs.db
 
 # Project Specific
-data.db
+#data.db
 *.log
 
 # Gemini Agent
